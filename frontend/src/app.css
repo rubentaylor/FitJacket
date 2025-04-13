@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+@layer components {
+	.nav-link {
+		@apply relative flex cursor-pointer items-center justify-center rounded p-1.5 text-sm text-neutral-700 duration-200 hover:bg-neutral-200/80;
+	}
+
+	.btn-primary {
+		@apply flex cursor-pointer items-center justify-center rounded-lg bg-cyan-500 px-2 text-sm font-semibold text-white duration-200 hover:bg-cyan-400;
+	}
+
+	.btn-secondary {
+		@apply flex cursor-pointer items-center justify-center rounded-lg border-2 border-cyan-300 bg-cyan-50 px-2 text-sm font-semibold text-cyan-500 duration-200 hover:border-cyan-500;
+	}
+}
+
+@layer base {
+	a {
+		@apply cursor-pointer;
+	}
+
+	h1 {
+		@apply text-5xl leading-tight font-bold text-gray-900;
+	}
+
+	h2 {
+		@apply text-3xl leading-tight font-semibold text-gray-900;
+	}
+
+	h3 {
+		@apply text-2xl leading-snug font-semibold text-gray-900;
+	}
+
+	h4 {
+		@apply text-xl leading-snug font-medium text-gray-900;
+	}
+
+	h5 {
+		@apply text-lg leading-normal font-medium text-gray-900;
+	}
+
+	h6 {
+		@apply text-base leading-normal font-medium text-gray-900;
+	}
+
+	p {
+		@apply text-base leading-relaxed text-neutral-800;
+	}
+}
