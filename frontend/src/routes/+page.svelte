@@ -3,7 +3,7 @@
 </script>
 
 <section>
-    <div class="w-full h-[100vh] bg-neutral-50">
+    <div class="w-full h-[100vh]">
         <div class="h-full w-full items-center justify-between z-10 absolute flex px-40">
             <div class="flex flex-col gap-y-8 w-1/2 items-start">
                 <div class="flex flex-col gap-y-4">
