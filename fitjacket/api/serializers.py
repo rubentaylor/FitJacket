@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 from .models import (
     Friend, Announcement, FriendRequest, Message,
     FitnessEvent, FitnessChallenge, FlaggedAIMessage, Workout
@@ -7,9 +8,11 @@ from .models import (
 
 
 class UserSerializer(serializers.ModelSerializer):
+    token = serializers.CharField(read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password']
+        fields = ['id', 'username', 'email', 'password', 'token']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -18,6 +21,8 @@ class UserSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password']
         )
+        token = Token.objects.create(user=user)
+        validated_data['token'] = token.key
         return user
 
 class FriendSerializer(serializers.ModelSerializer):
