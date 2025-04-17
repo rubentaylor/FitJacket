@@ -135,3 +135,27 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
+
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = False  # More secure to specify origins
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # local dev server
+    "http://127.0.0.1:5173",
+]
+
+# If you need to allow credentials (cookies, authorization headers)
+CORS_ALLOW_CREDENTIALS = True
+
+# Optional: Allow specific headers if needed
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
