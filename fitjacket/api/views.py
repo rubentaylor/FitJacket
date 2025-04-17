@@ -10,6 +10,8 @@ from .serializers import (
     MessageSerializer, FitnessEventSerializer, FitnessChallengeSerializer,
     FlaggedAIMessageSerializer, WorkoutSerializer
 )
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
 
 # Create your views here.
 
@@ -73,9 +75,18 @@ class MessageCreateView(generics.CreateAPIView):
 class FitnessEventListView(generics.ListAPIView):
     queryset = FitnessEvent.objects.all()
     serializer_class = FitnessEventSerializer
+    permission_classes = [AllowAny]
+
+class FitnessEventDetailView(generics.RetrieveAPIView):
+    queryset = FitnessEvent.objects.all()
+    serializer_class = FitnessEventSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'event_id'
+    permission_classes = [AllowAny]
 
 class FitnessEventUserListView(generics.ListAPIView):
     serializer_class = FitnessEventSerializer
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']
@@ -84,13 +95,16 @@ class FitnessEventUserListView(generics.ListAPIView):
 class FitnessEventCreateView(generics.CreateAPIView):
     queryset = FitnessEvent.objects.all()
     serializer_class = FitnessEventSerializer
+    permission_classes = [AllowAny]
 
 class FitnessChallengeListView(generics.ListAPIView):
     queryset = FitnessChallenge.objects.all()
     serializer_class = FitnessChallengeSerializer
+    permission_classes = [AllowAny]
 
 class FitnessChallengeUserListView(generics.ListAPIView):
     serializer_class = FitnessChallengeSerializer
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']
@@ -99,6 +113,7 @@ class FitnessChallengeUserListView(generics.ListAPIView):
 class FitnessChallengeCreateView(generics.CreateAPIView):
     queryset = FitnessChallenge.objects.all()
     serializer_class = FitnessChallengeSerializer
+    permission_classes = [AllowAny]
 
 class FlaggedAIMessageListView(generics.ListAPIView):
     serializer_class = FlaggedAIMessageSerializer
@@ -121,3 +136,17 @@ class WorkoutListView(generics.ListAPIView):
 class WorkoutCreateView(generics.CreateAPIView):
     queryset = Workout.objects.all()
     serializer_class = WorkoutSerializer
+
+class CustomAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                         context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'email': user.email,
+            'username': user.username
+        })

@@ -6,14 +6,14 @@ from .views import (
     AnnouncementListView, AnnouncementCreateView,
     FriendRequestListView, FriendRequestCreateView,
     MessageListView, MessageCreateView,
-    FitnessEventListView, FitnessEventUserListView, FitnessEventCreateView,
+    FitnessEventListView, FitnessEventUserListView, FitnessEventCreateView, FitnessEventDetailView,
     FitnessChallengeListView, FitnessChallengeUserListView, FitnessChallengeCreateView,
     FlaggedAIMessageListView, FlaggedAIMessageCreateView,
-    WorkoutListView, WorkoutCreateView
+    WorkoutListView, WorkoutCreateView, CustomAuthToken
 )
 
 urlpatterns = [
-    path('login/', obtain_auth_token, name='api_token_auth'),
+    path('login/', CustomAuthToken.as_view(), name='api_token_auth'),
     path('users/', UserListCreateView.as_view(), name='user-list'),
     path('friends/<int:user_id>/', FriendListView.as_view(), name='friend-list'),
     path('announcements/', AnnouncementListView.as_view(), name='announcement-list'),
@@ -21,7 +21,8 @@ urlpatterns = [
     path('friend-requests/<int:user_id>/', FriendRequestListView.as_view(), name='friend-request-list'),
     path('messages/<int:user_id>/', MessageListView.as_view(), name='message-list'),
     path('fitness-events/', FitnessEventListView.as_view(), name='fitness-event-list'),
-    path('fitness-events/<int:user_id>/', FitnessEventUserListView.as_view(), name='fitness-event-user-list'),
+    path('fitness-events/<int:event_id>/', FitnessEventDetailView.as_view(), name='fitness-event-detail'),
+    path('fitness-events/user/<int:user_id>/', FitnessEventUserListView.as_view(), name='fitness-event-user-list'),
     path('fitness-events/create/', FitnessEventCreateView.as_view(), name='fitness-event-create'),
     path('fitness-challenges/', FitnessChallengeListView.as_view(), name='fitness-challenge-list'),
     path('fitness-challenges/<int:user_id>/', FitnessChallengeUserListView.as_view(), name='fitness-challenge-user-list'),
