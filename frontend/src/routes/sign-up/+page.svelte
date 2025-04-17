@@ -1,5 +1,7 @@
 <script lang="ts">
-    let name = $state('');
+    import { auth } from "$lib/shared/auth.svelte";
+
+    let username = $state('');
     let email = $state('');
     let password = $state('');
     let confirmPassword = $state('');
@@ -8,6 +10,11 @@
 
     async function handleSubmit(e: SubmitEvent) {
         e.preventDefault();
+
+        if (auth.token !== '') {
+            errorMsg = 'You are already logged in';
+        }
+
         errorMsg = '';
         
         if (password !== confirmPassword) {
@@ -23,10 +30,24 @@
         loading = true;
         
         try {
-            // sign up
-            
-            // Redirect to login or dashboard
-            window.location.href = '/dashboard';
+            const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/api/users/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password
+                }),
+            });
+
+            const data = await response.json();
+
+            console.log(data);
+
+            auth.setToken(data.token);
+            auth.setUser('', username);
         } catch (error) {
             errorMsg = 'An error occurred during sign up';
         } finally {
@@ -46,11 +67,11 @@
                 
                 <form class="flex flex-col gap-y-3 w-full" onsubmit={handleSubmit}>
                     <div class="flex flex-col gap-y-1">
-                        <label for="name" class="text-sm">Name</label>
+                        <label for="username" class="text-sm">Username</label>
                         <input class="input h-9"
                             type="text" 
-                            id="name" 
-                            bind:value={name} 
+                            id="username" 
+                            bind:value={username} 
                             required 
                             disabled={loading}
                         />
@@ -70,7 +91,7 @@
                     <div class="flex flex-col gap-y-1">
                         <label for="password" class="text-sm">Password</label>
                         <input class="input h-9"
-                            type="text" 
+                            type="password" 
                             id="password" 
                             bind:value={password} 
                             required 
@@ -81,7 +102,7 @@
                     <div class="flex flex-col gap-y-1">
                         <label for="confirmPassword" class="text-sm">Confirm Password</label>
                         <input class="input h-9"
-                            type="text" 
+                            type="password" 
                             id="confirmPassword" 
                             bind:value={confirmPassword} 
                             required 
@@ -98,6 +119,6 @@
                     Already have an account? <a class="link" href="/login">Log in</a>
                 </div>
             </div>
-            </div>
+        </div>
     </div>
 </section>

@@ -1,1 +1,0 @@
-<div>workout groups</div>

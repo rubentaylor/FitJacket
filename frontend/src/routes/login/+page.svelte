@@ -1,11 +1,18 @@
 <script lang="ts">
-    let email = $state('');
+    import { auth } from "$lib/shared/auth.svelte";
+
+    let username = $state('');
     let password = $state('');
     let errorMsg = $state('');
     let loading = $state(false);
 
     async function handleSubmit(e: SubmitEvent) {
         e.preventDefault();
+
+        if (auth.token !== '') {
+            errorMsg = 'You are already logged in';
+        }
+
         errorMsg = '';
         
         if (password.length < 8) {
@@ -16,10 +23,21 @@
         loading = true;
         
         try {
-            // login
-            
-            // Redirect to login or dashboard
-            window.location.href = '/dashboard';
+            const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/api/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username,
+                    password
+                }),
+            });
+
+            const data = await response.json();
+
+            auth.setToken(data.token);
+            auth.setUser('', username);
         } catch (error) {
             errorMsg = 'An error occurred during sign up';
         } finally {
@@ -34,26 +52,26 @@
             <div class="flex flex-col items-center gap-y-6">
                 <h3>Login</h3>
                 {#if errorMsg}
-                    <div class="text-red-500 mb-4">{errorMsg}</div>
+                    <div class="text-red-500 -my-3">{errorMsg}</div>
                 {/if}
                 
                 <form class="flex flex-col gap-y-3 w-full" onsubmit={handleSubmit}>
                     <div class="flex flex-col gap-y-1">
-                        <label for="email" class="text-sm">Email</label>
+                        <label for="email" class="text-sm">Username</label>
                         <input class="input h-9"
                             type="text" 
-                            id="email" 
-                            bind:value={email} 
+                            id="username" 
+                            bind:value={username} 
                             required 
                             disabled={loading}
                         />
                     </div>
-                    
+
                     <div class="flex flex-col gap-y-1">
                         <label for="password" class="text-sm">Password</label>
                         <input class="input h-9"
-                            type="text" 
-                            id="password" 
+                            type="password" 
+                            name="password" 
                             bind:value={password} 
                             required 
                             disabled={loading}
