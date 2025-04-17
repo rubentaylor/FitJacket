@@ -23,6 +23,20 @@ class UserListCreateView(generics.ListCreateAPIView):
         if self.request.method == 'POST':
             return [AllowAny()]
         return [IsAuthenticated()]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        user = serializer.instance
+        token, created = Token.objects.get_or_create(user=user)
+        
+        response_data = serializer.data
+        response_data['token'] = token.key
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
