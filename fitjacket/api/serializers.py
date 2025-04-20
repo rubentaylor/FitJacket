@@ -43,7 +43,7 @@ class FriendRequestSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'receiver', 'text', 'created_at', 'updated_at']
+        fields = ['id', 'sender', 'receiver', 'text','viewed','created_at', 'updated_at']
 
 class FitnessEventSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,4 +63,4 @@ class FlaggedAIMessageSerializer(serializers.ModelSerializer):
 class WorkoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workout
-        fields = ['id', 'user', 'description', 'type', 'tp', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'description', 'type', 'tp', 'start_time', 'end_time', 'created_at', 'updated_at']

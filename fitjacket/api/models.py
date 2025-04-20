@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Friend(models.Model):
     user_id1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friends_as_user1')
@@ -32,6 +33,7 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     text = models.TextField()
+    viewed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -83,6 +85,8 @@ class Workout(models.Model):
     description = models.TextField()
     type = models.CharField(max_length=20, choices=WORKOUT_TYPES)
     tp = models.CharField(max_length=255)
+    start_time = models.DateTimeField()  
+    end_time = models.DateTimeField() 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

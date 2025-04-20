@@ -164,3 +164,13 @@ class CustomAuthToken(ObtainAuthToken):
             'email': user.email,
             'username': user.username
         })
+    
+class MessageMarkAsViewedView(generics.UpdateAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    
+    def update(self, request, *args, **kwargs):
+        message = self.get_object()
+        message.viewed = True
+        message.save()
+        return Response(self.get_serializer(message).data)

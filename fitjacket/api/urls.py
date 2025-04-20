@@ -9,7 +9,7 @@ from .views import (
     FitnessEventListView, FitnessEventUserListView, FitnessEventCreateView, FitnessEventDetailView,
     FitnessChallengeListView, FitnessChallengeUserListView, FitnessChallengeCreateView,
     FlaggedAIMessageListView, FlaggedAIMessageCreateView,
-    WorkoutListView, WorkoutCreateView, CustomAuthToken
+    WorkoutListView, WorkoutCreateView, CustomAuthToken, MessageMarkAsViewedView
 )
 
 urlpatterns = [
@@ -29,4 +29,5 @@ urlpatterns = [
     path('fitness-challenges/create/', FitnessChallengeCreateView.as_view(), name='fitness-challenge-create'),
     path('flagged-ai-messages/<int:user_id>/', FlaggedAIMessageListView.as_view(), name='flagged-ai-message-list'),
     path('workouts/<int:user_id>/', WorkoutListView.as_view(), name='workout-list'),
+    path('messages/<int:pk>/mark-as-viewed/', MessageMarkAsViewedView.as_view(), name='message-mark-as-viewed'),
 ]
