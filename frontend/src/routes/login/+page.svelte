@@ -1,5 +1,13 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { goto } from "$app/navigation";
     import { auth } from "$lib/shared/auth.svelte";
+
+    onMount(() => {
+        if (auth.token !== null && auth.token !== '') {
+            goto('/dashboard');
+        }
+    });
 
     let username = $state('');
     let password = $state('');

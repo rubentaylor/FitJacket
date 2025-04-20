@@ -32,7 +32,7 @@ export let auth = $state({
 $effect.root(() => {
 	$effect(() => {
 		if (browser) {
-			localStorage.setItem('auth', JSON.stringify(defaultAuth));
+			localStorage.setItem('auth', JSON.stringify(auth));
 		}
 	});
 });

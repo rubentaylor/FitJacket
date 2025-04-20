@@ -3,8 +3,8 @@
 </script>
 
 <section>
-    <div class="w-full h-[100vh]">
-        <div class="h-full w-full items-center justify-between z-10 absolute flex px-40">
+    <div class="h-[100vh] page-margins">
+        <div class="h-full w-full items-center justify-between z-10 flex gap-x-8">
             <div class="flex flex-col gap-y-8 w-1/2 items-start">
                 <div class="flex flex-col gap-y-4">
                     <h1>Be the Best You With <span class="text-cyan-300">FitJacket</span></h1>
@@ -19,7 +19,7 @@
                     </a>
                 </div>
             </div>
-            <div class="w-1/2 h-2/3 -z-10 relative rounded-xl overflow-hidden">
+            <div class="h-2/3 w-1/2 bg-black -z-10 relative rounded-xl overflow-hidden">
                 <div class="absolute inset-0 bg-black/50 -z-10"></div>
                 <img class="-z-20 object-cover h-full w-full absolute" src={heroImage} alt="hero"/>
             </div>
