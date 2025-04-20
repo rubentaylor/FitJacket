@@ -14,6 +14,26 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 
 # Create your views here.
+class BatchUserLookupView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_ids = self.request.query_params.get('ids', '').split(',')
+        
+        if not user_ids or not user_ids[0]:  
+            return User.objects.none()
+        
+        try:
+            user_ids = [int(id) for id in user_ids]
+            return User.objects.filter(id__in=user_ids)
+        except ValueError:
+            return User.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
