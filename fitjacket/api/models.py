@@ -49,23 +49,10 @@ class FitnessEvent(models.Model):
     participants = models.ManyToManyField(User, related_name='events_participated')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    location = models.CharField(max_length=255, blank=True, null=True)
     def __str__(self):
         return self.title
-
-class FitnessChallenge(models.Model):
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    description = models.TextField()
-    title = models.CharField(max_length=255)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    participants = models.ManyToManyField(User, related_name='challenges_participated')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.title
-
+    
 class FlaggedAIMessage(models.Model):
     text = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -92,3 +79,16 @@ class Workout(models.Model):
 
     def __str__(self):
         return f"{self.user.email}: {self.type} - {self.description[:30]}"
+
+class FitnessChallenge(models.Model):
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    description = models.TextField()
+    title = models.CharField(max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    participants = models.ManyToManyField(User, related_name='challenges_participated')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    workouts = models.ManyToManyField(Workout, related_name='challenges', blank=True)
+    def __str__(self):
+        return self.title

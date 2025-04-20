@@ -48,12 +48,17 @@ class MessageSerializer(serializers.ModelSerializer):
 class FitnessEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = FitnessEvent
-        fields = ['id', 'start_time', 'end_time', 'description', 'title', 'user', 'participants', 'created_at', 'updated_at']
+        fields = ['id', 'start_time', 'end_time', 'description', 'title', 'user', 'participants', 'location', 'created_at', 'updated_at']
 
 class FitnessChallengeSerializer(serializers.ModelSerializer):
+    workouts = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Workout.objects.all(),
+        required=False
+    )
     class Meta:
         model = FitnessChallenge
-        fields = ['id', 'start_time', 'end_time', 'description', 'title', 'user', 'participants', 'created_at', 'updated_at']
+        fields = ['id', 'start_time', 'end_time', 'description', 'title', 'user', 'participants', 'workouts', 'created_at', 'updated_at']
 
 class FlaggedAIMessageSerializer(serializers.ModelSerializer):
     class Meta:
