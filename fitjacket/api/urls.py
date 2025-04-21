@@ -1,5 +1,6 @@
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
+from . import views
 from .views import (
     UserListCreateView, UserDetailView,
     FriendListView, FriendCreateView,
@@ -31,4 +32,6 @@ urlpatterns = [
     path('workouts/<int:user_id>/', WorkoutListView.as_view(), name='workout-list'),
     path('messages/<int:pk>/mark-as-viewed/', MessageMarkAsViewedView.as_view(), name='message-mark-as-viewed'),
     path('users/batch/', BatchUserLookupView.as_view(), name='batch-user-lookup'),
+    path('strava/login/', views.strava_login, name='strava_login'),
+    path('strava/callback/', views.strava_callback, name='strava_callback'),
 ]

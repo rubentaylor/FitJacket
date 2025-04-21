@@ -12,6 +12,10 @@ from .serializers import (
 )
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+import requests
+from django.conf import settings
+from django.shortcuts import redirect
+from django.http import JsonResponse
 
 # Create your views here.
 class BatchUserLookupView(generics.ListAPIView):
@@ -194,3 +198,54 @@ class MessageMarkAsViewedView(generics.UpdateAPIView):
         message.viewed = True
         message.save()
         return Response(self.get_serializer(message).data)
+
+
+STRAVA_CLIENT_ID = '156568'
+STRAVA_CLIENT_SECRET = settings.STRAVA_CLIENT_SECRET  # pull from env or settings.py
+REDIRECT_URI = 'http://127.0.0.1:8000/api/strava/callback/'  # Make sure it matches Strava config
+
+
+def strava_login(request):
+    auth_url = (
+        f"https://www.strava.com/oauth/authorize"
+        f"?client_id={STRAVA_CLIENT_ID}"
+        f"&response_type=code"
+        f"&redirect_uri={REDIRECT_URI}"
+        f"&approval_prompt=auto"
+        f"&scope=read,activity:read"
+    )
+    return redirect(auth_url)
+
+
+def strava_callback(request):
+    code = request.GET.get('code')
+
+    token_response = requests.post(
+        'https://www.strava.com/oauth/token',
+        data={
+            'client_id': '156568',
+            'client_secret': 'fd86fc31b5880bdce098b94e0a2bc703819693ed',
+            'code': code,
+            'grant_type': 'authorization_code'
+        }
+    )
+
+    token_data = token_response.json()
+    access_token = token_data.get('access_token')
+
+    # Make test API call
+    if access_token:
+        headers = {'Authorization': f'Bearer {access_token}'}
+        activities_response = requests.get('https://www.strava.com/api/v3/athlete/activities', headers=headers)
+
+        if activities_response.status_code == 200:
+            activities = activities_response.json()
+            print("Strava Activities:")
+            for activity in activities[:5]:  # Limit to first 5
+                print(f"Name: {activity['name']} | Distance: {activity['distance']}m")
+        else:
+            print("Failed to fetch activities:", activities_response.text)
+    else:
+        print("No access token returned:", token_data)
+
+    return JsonResponse(token_data)
