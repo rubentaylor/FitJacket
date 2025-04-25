@@ -45,7 +45,7 @@
     <div class="flex flex-col px-4 py-4 gap-y-4">
         <div class="flex flex-col gap-y-1 rounded px-2">
             <div class="text-gray-700 font-semibold">{username}</div>
-            <p class="text-xs">{email || 'deliciousbrain42@gmail.com'}</p>
+            <p class="text-xs">{email}</p>
         </div>
         <hr/>
         <div class="flex flex-col gap-y-2">

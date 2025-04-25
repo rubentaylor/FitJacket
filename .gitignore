@@ -37,3 +37,5 @@ virtualenv/
 
 # SQL Lite
 db.sqlite3
+
+.idea/

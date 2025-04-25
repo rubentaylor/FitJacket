@@ -1,6 +1,14 @@
 <script lang="ts">
     import { auth } from "$lib/shared/auth.svelte";
 	import { Sidebar } from "$lib/components/ui/";
+	import { onMount } from "svelte";
+	import { goto } from "$app/navigation";
+
+    onMount(() => {
+        if (auth.token == null || auth.token === '') {
+            goto("/login");
+        }
+    });
     
     let { children } = $props();
 </script>

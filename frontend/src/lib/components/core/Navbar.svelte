@@ -1,5 +1,9 @@
 <script lang="ts">
     import { auth } from "$lib/shared/auth.svelte";
+
+    function handleLogout() {
+        auth.clearAuth();
+    }
 </script>
 
 <nav class="w-full fixed h-[56px] bg-white z-50">
@@ -21,7 +25,7 @@
             {:else}
                 <div class="flex items-center gap-x-3">
                     <a href="/dashboard" class="nav-link">{auth.user.username}</a>
-                    <button class="btn-red h-8">Logout</button>
+                    <button class="btn-red h-8" onclick={handleLogout}>Logout</button>
                 </div>
             {/if}
             

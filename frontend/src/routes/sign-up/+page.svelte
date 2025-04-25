@@ -50,12 +50,16 @@
                 }),
             });
 
+            if (!response.ok) {
+                throw new Error();
+            }
+
             const data = await response.json();
 
-            console.log(data);
-
             auth.setToken(data.token);
-            auth.setUser('', username);
+            auth.setUser(data.email, username);
+
+            goto('/dashboard');
         } catch (error) {
             errorMsg = 'An error occurred during sign up';
         } finally {
