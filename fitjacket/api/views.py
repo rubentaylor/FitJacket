@@ -4,11 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-from .models import Friend, Announcement, FriendRequest, Message, FitnessEvent, FitnessChallenge, FlaggedAIMessage, Workout
+from .models import Friend, Announcement, FriendRequest, Message, FitnessEvent, FitnessChallenge, FlaggedAIMessage, Workout, UserWorkout
 from .serializers import (
     UserSerializer, FriendSerializer, AnnouncementSerializer, FriendRequestSerializer,
     MessageSerializer, FitnessEventSerializer, FitnessChallengeSerializer,
-    FlaggedAIMessageSerializer, WorkoutSerializer
+    FlaggedAIMessageSerializer, WorkoutSerializer, UserWorkoutSerializer
 )
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -17,17 +17,16 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.http import JsonResponse
 
-# Create your views here.
+    
 class BatchUserLookupView(generics.ListAPIView):
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         user_ids = self.request.query_params.get('ids', '').split(',')
         
         if not user_ids or not user_ids[0]:  
             return User.objects.none()
-        
         try:
             user_ids = [int(id) for id in user_ids]
             return User.objects.filter(id__in=user_ids)
@@ -65,9 +64,11 @@ class UserListCreateView(generics.ListCreateAPIView):
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
 class FriendListView(generics.ListAPIView):
     serializer_class = FriendSerializer
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']
@@ -88,6 +89,7 @@ class AnnouncementCreateView(generics.CreateAPIView):
 
 class FriendRequestListView(generics.ListAPIView):
     serializer_class = FriendRequestSerializer
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']
@@ -98,12 +100,21 @@ class FriendRequestCreateView(generics.CreateAPIView):
     serializer_class = FriendRequestSerializer
 
 
-class MessageListView(generics.ListAPIView):
+class MessageReceivedListView(generics.ListAPIView):
     serializer_class = MessageSerializer
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']
         return Message.objects.filter(receiver=user_id)
+
+class MessageSentListView(generics.ListAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Message.objects.filter(sender=user_id)
 
 class MessageCreateView(generics.CreateAPIView):
     queryset = Message.objects.all()
@@ -170,6 +181,26 @@ class WorkoutListView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs['user_id']
         return Workout.objects.filter(user=user_id)
+    
+class BatchWorkoutLookupView(generics.ListAPIView):
+    serializer_class = WorkoutSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        workout_ids = self.request.query_params.get('ids', '').split(',')
+        
+        if not workout_ids or not workout_ids[0]:  
+            return Workout.objects.none()
+        try:
+            workout_ids = [int(id) for id in workout_ids]
+            return Workout.objects.filter(id__in=workout_ids)
+        except ValueError:
+            return Workout.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 class WorkoutCreateView(generics.CreateAPIView):
     queryset = Workout.objects.all()
@@ -198,6 +229,28 @@ class MessageMarkAsViewedView(generics.UpdateAPIView):
         message.viewed = True
         message.save()
         return Response(self.get_serializer(message).data)
+
+class UserWorkoutListView(generics.ListAPIView):
+    serializer_class = UserWorkoutSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return UserWorkout.objects.filter(user=user_id)
+    
+class UserWorkoutCreateView(generics.CreateAPIView):
+    queryset = UserWorkout.objects.all()
+    serializer_class = UserWorkoutSerializer
+    permission_classes = [AllowAny]
+
+class WorkoutCompletionsListView(generics.ListAPIView):
+    """Get all users who completed a specific workout"""
+    serializer_class = UserWorkoutSerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        workout_id = self.kwargs['workout_id']
+        return UserWorkout.objects.filter(workout=workout_id)
 
 
 STRAVA_CLIENT_ID = '156568'

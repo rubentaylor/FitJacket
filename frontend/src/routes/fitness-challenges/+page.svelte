@@ -4,6 +4,7 @@
     let { data } = $props();
 
     let fitnessChallenges = $derived(data.fitnessChallenges.results);
+    console.log(fitnessChallenges);
 </script>
 
 <section>

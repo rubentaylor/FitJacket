@@ -31,6 +31,8 @@ export let auth = $state({
 	setUser(email: string, username: string, userId: number) {
 		this.user.email = email;
 		this.user.username = username;
+		this.user.id = userId;
+
 		setCookie('user_id', userId.toString());
 	},
 

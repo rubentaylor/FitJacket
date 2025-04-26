@@ -33,6 +33,7 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     text = models.TextField()
+
     viewed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -67,11 +68,15 @@ class Workout(models.Model):
         ('cardio', 'Cardio'),
         ('muscle', 'Muscle'),
         ('flexibility', 'Flexibility'),
+        ('strength', 'Strength'),
+        ('functional', 'Functional'),
+        ('circuit', 'Circuit'),
+        ('other', 'Other')
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.TextField()
     type = models.CharField(max_length=20, choices=WORKOUT_TYPES)
-    tp = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     start_time = models.DateTimeField()  
     end_time = models.DateTimeField() 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -79,6 +84,11 @@ class Workout(models.Model):
 
     def __str__(self):
         return f"{self.user.email}: {self.type} - {self.description[:30]}"
+
+class UserWorkout(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='completed_workouts')
+    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name='user_completions')
+    completed_at = models.DateTimeField(default=timezone.now)
 
 class FitnessChallenge(models.Model):
     start_time = models.DateTimeField()

@@ -30,11 +30,11 @@
 	}
 
 	.input {
-		@apply rounded border-2 border-neutral-200 px-2 ring-cyan-400 duration-200 focus:ring-2 focus:outline-none;
+		@apply rounded border-2 border-neutral-200 px-2 py-1 ring-cyan-400 duration-200 focus:ring-2 focus:outline-none;
 	}
 
 	.dashboard-link {
-		@apply flex items-center gap-x-2 rounded-lg p-2 text-[15px] text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-cyan-500;
+		@apply flex items-center gap-x-2 rounded-lg p-2 text-[15px] text-neutral-600 transition-colors hover:bg-neutral-100/80;
 	}
 }
 
@@ -73,7 +73,7 @@
 	}
 
 	p {
-		@apply text-base leading-relaxed text-neutral-600;
+		@apply text-sm leading-relaxed text-neutral-600;
 	}
 
 	button {

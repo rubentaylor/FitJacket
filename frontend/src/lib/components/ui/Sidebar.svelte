@@ -43,8 +43,8 @@
 
 <div class="h-full pt-[56px] w-64 bg-white border-r border-neutral-200">
     <div class="flex flex-col px-4 py-4 gap-y-4">
-        <div class="flex flex-col gap-y-1 rounded px-2">
-            <div class="text-gray-700 font-semibold">{username}</div>
+        <div class="flex flex-col rounded px-2">
+            <h6>{username}</h6>
             <p class="text-xs">{email}</p>
         </div>
         <hr/>
@@ -55,10 +55,10 @@
                 class="dashboard-link {
                 item.href === '/dashboard' 
                     ? page.url.pathname === '/dashboard' 
-                    ? 'bg-neutral-100 text-cyan-500' 
+                    ? 'bg-neutral-100/80 text-cyan-500' 
                     : ''
                     : page.url.pathname.includes(item.href) 
-                    ? 'bg-neutral-100 text-cyan-500' 
+                    ? 'bg-neutral-100/80 text-cyan-500' 
                     : ''
                 }">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

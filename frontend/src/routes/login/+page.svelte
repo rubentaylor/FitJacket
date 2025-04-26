@@ -51,7 +51,7 @@
             console.log(data);
 
             auth.setToken(data.token);
-            auth.setUser(data.email, username);
+            auth.setUser(data.email, username, data.user_id);
 
             goto('/dashboard');
         } catch (error) {

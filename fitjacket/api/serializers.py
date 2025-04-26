@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from .models import (
     Friend, Announcement, FriendRequest, Message,
-    FitnessEvent, FitnessChallenge, FlaggedAIMessage, Workout
+    FitnessEvent, FitnessChallenge, FlaggedAIMessage, Workout, UserWorkout
 )
 
 
@@ -26,9 +26,12 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class FriendSerializer(serializers.ModelSerializer):
+    user_id1_details = UserSerializer(source='user_id1', read_only=True)
+    user_id2_details = UserSerializer(source='user_id2', read_only=True)
+    
     class Meta:
         model = Friend
-        fields = ['id', 'user_id1', 'user_id2', 'created_at', 'updated_at']
+        fields = ['id', 'user_id1', 'user_id2', 'created_at', 'updated_at', 'user_id1_details', 'user_id2_details']
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,9 +39,12 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'created_at', 'updated_at']
 
 class FriendRequestSerializer(serializers.ModelSerializer):
+    sender_details = UserSerializer(source='sender', read_only=True)
+    receiver_details = UserSerializer(source='receiver', read_only=True)
+    
     class Meta:
         model = FriendRequest
-        fields = ['id', 'sender', 'receiver', 'created_at', 'updated_at']
+        fields = ['id', 'sender', 'receiver', 'created_at', 'updated_at', 'sender_details', 'receiver_details']
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -68,4 +74,12 @@ class FlaggedAIMessageSerializer(serializers.ModelSerializer):
 class WorkoutSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workout
-        fields = ['id', 'user', 'description', 'type', 'tp', 'start_time', 'end_time', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'description', 'type', 'name', 'start_time', 'end_time', 'created_at', 'updated_at']
+
+class UserWorkoutSerializer(serializers.ModelSerializer):
+    user_details = UserSerializer(source='user', read_only=True)
+    workout_details = WorkoutSerializer(source='workout', read_only=True)
+    
+    class Meta:
+        model = UserWorkout
+        fields = ['id', 'user', 'workout', 'completed_at', 'user_details', 'workout_details']

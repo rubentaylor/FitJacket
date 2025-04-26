@@ -6,7 +6,7 @@
     }
 </script>
 
-<nav class="w-full fixed h-[56px] bg-white z-50">
+<nav class="w-full fixed h-[56px] bg-white z-40">
     <div class="h-full w-full flex items-center justify-between nav-margins border-b border-neutral-200">
         <a href="/" class="font-bold text-xl text-neutral-700 duration-300 hover:text-cyan-300 rounded">
             FitJacket
