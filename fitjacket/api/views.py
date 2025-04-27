@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -16,6 +17,7 @@ import requests
 from django.conf import settings
 from django.shortcuts import redirect
 from django.http import JsonResponse
+from django.utils import timezone
 
     
 class BatchUserLookupView(generics.ListAPIView):
@@ -66,6 +68,33 @@ class UserDetailView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
+class UserUpdateView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+    
+    def get_serializer(self, *args, **kwargs):
+        kwargs['partial'] = True
+        return super().get_serializer(*args, **kwargs)
+    
+class ChangePasswordView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('pk')
+        user = get_object_or_404(User, id=user_id)
+        
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        
+        if not user.check_password(current_password):
+            return Response({'detail': 'Current password is incorrect'}, 
+                            status=status.HTTP_400_BAD_REQUEST)
+        
+        user.set_password(new_password)
+        user.save()
+        return Response({'detail': 'Password changed successfully'})
+
 class FriendListView(generics.ListAPIView):
     serializer_class = FriendSerializer
     permission_classes = [AllowAny]
@@ -73,6 +102,14 @@ class FriendListView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs['user_id']
         return Friend.objects.filter(user_id1=user_id) | Friend.objects.filter(user_id2=user_id)
+    
+class FriendDeleteView(generics.DestroyAPIView):
+    serializer_class = FriendSerializer
+    permission_classes = [AllowAny]
+    
+    def get_object(self):
+        friend_id = self.kwargs['friend_id']
+        return Friend.objects.get(id=friend_id)
 
 class FriendCreateView(generics.CreateAPIView):
     queryset = Friend.objects.all()
@@ -81,6 +118,7 @@ class FriendCreateView(generics.CreateAPIView):
 class AnnouncementListView(generics.ListAPIView):
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
+    permission_classes = [AllowAny]
 
 class AnnouncementCreateView(generics.CreateAPIView):
     queryset = Announcement.objects.all()
@@ -98,6 +136,41 @@ class FriendRequestListView(generics.ListAPIView):
 class FriendRequestCreateView(generics.CreateAPIView):
     queryset = FriendRequest.objects.all()
     serializer_class = FriendRequestSerializer
+    permission_classes = [AllowAny]
+
+class FriendRequestAcceptView(generics.UpdateAPIView):
+    queryset = FriendRequest.objects.all()
+    serializer_class = FriendRequestSerializer
+    permission_classes = [AllowAny]
+    
+    def update(self, request, *args, **kwargs):
+        friend_request = self.get_object()
+        
+        friendship = Friend.objects.create(
+            user_id1=friend_request.sender,
+            user_id2=friend_request.receiver
+        )
+        
+        friend_request.delete()
+        
+        friend_serializer = FriendSerializer(friendship)
+        return Response(friend_serializer.data, status=status.HTTP_200_OK)
+
+
+class FriendRequestDeclineView(generics.UpdateAPIView):
+    queryset = FriendRequest.objects.all()
+    serializer_class = FriendRequestSerializer
+    permission_classes = [AllowAny]
+    
+    def update(self, request, *args, **kwargs):
+        friend_request = self.get_object()
+        
+        friend_request.delete()
+        
+        return Response(
+            {"detail": "Friend request declined successfully."},
+            status=status.HTTP_200_OK
+        )
 
 
 class MessageReceivedListView(generics.ListAPIView):
@@ -119,10 +192,11 @@ class MessageSentListView(generics.ListAPIView):
 class MessageCreateView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    permission_classes = [AllowAny]
 
 
 class FitnessEventListView(generics.ListAPIView):
-    queryset = FitnessEvent.objects.all()
+    queryset = FitnessEvent.objects.all().order_by('end_time')
     serializer_class = FitnessEventSerializer
     permission_classes = [AllowAny]
 
@@ -139,16 +213,47 @@ class FitnessEventUserListView(generics.ListAPIView):
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']
-        return FitnessEvent.objects.filter(user=user_id) | FitnessEvent.objects.filter(participants=user_id)
+        return FitnessEvent.objects.filter(user=user_id) | FitnessEvent.objects.filter(participants=user_id).order_by('end_time')
 
 class FitnessEventCreateView(generics.CreateAPIView):
     queryset = FitnessEvent.objects.all()
     serializer_class = FitnessEventSerializer
     permission_classes = [AllowAny]
 
-class FitnessChallengeListView(generics.ListAPIView):
+class FitnessEventUpdateView(generics.UpdateAPIView):
+    queryset = FitnessEvent.objects.all()
+    serializer_class = FitnessEventSerializer
+    permission_classes = [AllowAny]
+    lookup_url_kwarg = 'event_id'
+
+class FitnessEventDeleteView(generics.DestroyAPIView):
+    queryset = FitnessEvent.objects.all()
+    serializer_class = FitnessEventSerializer
+    permission_classes = [AllowAny]
+    lookup_url_kwarg = 'event_id'
+
+class FitnessChallengeUpdateView(generics.UpdateAPIView):
     queryset = FitnessChallenge.objects.all()
     serializer_class = FitnessChallengeSerializer
+    permission_classes = [AllowAny]
+    lookup_url_kwarg = 'challenge_id'
+
+class FitnessChallengeDeleteView(generics.DestroyAPIView):
+    queryset = FitnessChallenge.objects.all()
+    serializer_class = FitnessChallengeSerializer
+    permission_classes = [AllowAny]
+    lookup_url_kwarg = 'challenge_id'
+
+class FitnessChallengeListView(generics.ListAPIView):
+    queryset = FitnessChallenge.objects.all().order_by('end_time')
+    serializer_class = FitnessChallengeSerializer
+    permission_classes = [AllowAny]
+
+class FitnessChallengeDetailView(generics.RetrieveAPIView):
+    queryset = FitnessChallenge.objects.all()
+    serializer_class = FitnessChallengeSerializer
+    lookup_field = 'id'
+    lookup_url_kwarg = 'challenge_id'
     permission_classes = [AllowAny]
 
 class FitnessChallengeUserListView(generics.ListAPIView):
@@ -157,7 +262,8 @@ class FitnessChallengeUserListView(generics.ListAPIView):
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']
-        return FitnessChallenge.objects.filter(user=user_id) | FitnessChallenge.objects.filter(participants=user_id)
+        return (FitnessChallenge.objects.filter(user=user_id) | 
+                FitnessChallenge.objects.filter(participants=user_id)).order_by('end_time')
 
 class FitnessChallengeCreateView(generics.CreateAPIView):
     queryset = FitnessChallenge.objects.all()
@@ -177,6 +283,7 @@ class FlaggedAIMessageCreateView(generics.CreateAPIView):
 
 class WorkoutListView(generics.ListAPIView):
     serializer_class = WorkoutSerializer
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']
@@ -205,6 +312,7 @@ class BatchWorkoutLookupView(generics.ListAPIView):
 class WorkoutCreateView(generics.CreateAPIView):
     queryset = Workout.objects.all()
     serializer_class = WorkoutSerializer
+    permission_classes = [AllowAny]
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -223,6 +331,7 @@ class CustomAuthToken(ObtainAuthToken):
 class MessageMarkAsViewedView(generics.UpdateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    permission_classes = [AllowAny]
     
     def update(self, request, *args, **kwargs):
         message = self.get_object()
@@ -242,15 +351,6 @@ class UserWorkoutCreateView(generics.CreateAPIView):
     queryset = UserWorkout.objects.all()
     serializer_class = UserWorkoutSerializer
     permission_classes = [AllowAny]
-
-class WorkoutCompletionsListView(generics.ListAPIView):
-    """Get all users who completed a specific workout"""
-    serializer_class = UserWorkoutSerializer
-    permission_classes = [AllowAny]
-    
-    def get_queryset(self):
-        workout_id = self.kwargs['workout_id']
-        return UserWorkout.objects.filter(workout=workout_id)
 
 
 STRAVA_CLIENT_ID = '156568'

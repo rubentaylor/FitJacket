@@ -23,11 +23,11 @@
         <h4>My Events</h4>
 
         {#if myEvents && myEvents.length > 0}
-            {#each myEvents as event}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <FitnessEventCard fitnessEvent={event} />
-                </div>
-            {/each}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {#each myEvents as event}
+                    <FitnessEventCard editable={true} fitnessEvent={event} joinable={false} />
+                {/each}
+            </div>
         {:else}
             <p>You haven't created any fitness events yet</p>
         {/if}
@@ -35,11 +35,11 @@
     <div class="flex flex-col gap-y-3">
         <h4>Participating Events</h4>
         {#if participatingEvents && participatingEvents.length > 0}
-            {#each participatingEvents as event}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <FitnessEventCard fitnessEvent={event} />
-                </div>
-            {/each}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {#each participatingEvents as event}
+                    <FitnessEventCard fitnessEvent={event} joinable={false} />
+                {/each}
+            </div>
         {:else}
             <p>You aren't apart of any events. Browse fun events <a href="/fitness-events" class="link">here</a></p>
         {/if}

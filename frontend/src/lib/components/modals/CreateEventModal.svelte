@@ -1,18 +1,52 @@
 <script lang="ts">
     import { modal } from '$lib/shared/modals.svelte';
+    import { auth } from '$lib/shared/auth.svelte';
 
     let title = $state('');
     let description = $state('');
     let startTime = $state();
     let endTime = $state();
-    let workouts = $state();
+    let location = $state('');
     let loading = $state(false);
+
+    async function handleCreateFitnessEvent() {
+        loading = true;
+
+        try {
+            const response = await fetch('/dashboard/fitness-events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: title,
+                    description: description,
+                    start_time: startTime,
+                    end_time: endTime,
+                    location: location || null,
+                    user: auth.user.id,
+                    participants: [auth.user.id]
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to create fitness event');
+            }
+
+            window.location.href = '/dashboard/fitness-events/';
+            modal.close();
+        } catch (err) {
+            console.error(err);
+        } finally {
+            loading = false;
+        }
+    }
 </script>
 
-<div class="bg-white rounded shadow w-[800px] p-4 h-2/3">
+<div class="bg-white rounded shadow w-[800px] p-4">
     <div class="flex flex-col gap-y-3">
         <div class="flex justify-between items-center">
-            <h3>Create Fitness Event</h3>
+            <h3>Fitness Event</h3>
             <!-- svelte-ignore a11y_consider_explicit_label -->
             <button 
                 class="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
@@ -24,7 +58,7 @@
             </button>
         </div>
         <hr/>
-        <form class="flex flex-col gap-y-3">
+        <form class="flex flex-col gap-y-3" onsubmit={handleCreateFitnessEvent}>
             <div class="flex flex-col gap-y-1">
                 <label for="title" class="text-sm">Title</label>
                 <input class="input h-9"
@@ -33,7 +67,7 @@
                     bind:value={title} 
                     required 
                     disabled={loading}
-                    placeholder="Challenge title"
+                    placeholder="Event title"
                 />
             </div>
 
@@ -44,7 +78,7 @@
                     bind:value={description} 
                     required 
                     disabled={loading}
-                    placeholder="Describe your challenge"
+                    placeholder="Describe your event"
                 ></textarea>
             </div>
             
@@ -72,24 +106,21 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-y-1">
-                <label for="workouts" class="text-sm">Workouts</label>
-                <select class="input h-9"
-                    id="workouts" 
-                    bind:value={workouts} 
-                    multiple
+            <div class="flex flex-col gap-y-1 mt-3">
+                <label for="location" class="text-sm">Location</label>
+                <input class="input h-9"
+                    type="text" 
+                    id="location" 
+                    bind:value={location} 
                     disabled={loading}
-                >
-                    <option value="" disabled>Select workouts</option>
-                    <!-- We'll populate this with workout options from the backend -->
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple workouts</p>
+                    placeholder="Event location"
+                />
             </div>
             
             <div class="flex justify-end gap-x-3 mt-2">
                 <button 
                     type="button"
-                    class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded"
+                    class="btn-secondary h-8"
                     onclick={() => modal.close()}
                     disabled={loading}
                 >
@@ -97,10 +128,10 @@
                 </button>
                 <button 
                     type="submit"
-                    class="px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600"
-                    disabled={loading}
+                    class="btn-primary h-8"
+                    disabled={loading || !title || !description || !startTime || !endTime || !location || startTime >= endTime}
                 >
-                    Create Challenge
+                    Create Event
                 </button>
             </div>
         </form>

@@ -1,5 +1,5 @@
 <footer class="border-t border-neutral-200 bg-gray-100 pt-8">
-    <div class="container mx-auto px-20">
+    <div class="m-auto w-[min(1320px,94%)]">
         <div class="flex flex-col md:flex-row justify-between gap-8">
             <div class="mb-6 md:mb-0">
                 <h3 class="text-xl font-bold text-cyan-600 mb-3">FitJacket</h3>
@@ -15,8 +15,6 @@
                     <ul class="space-y-2 text-sm">
                         <li><a href="/fitness-events" class="link">Fitness Events</a></li>
                         <li><a href="/fitness-challenges" class="link">Fitness Challenges</a></li>
-                        <li><a href="/announcements" class="link">Announcements</a></li>
-                        <li><a href="#" class="link">About Us</a></li>
                     </ul>
                 </div>
             </div>

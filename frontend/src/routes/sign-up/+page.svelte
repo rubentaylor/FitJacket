@@ -38,7 +38,7 @@
         loading = true;
         
         try {
-            const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/api/users/', {
+            const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/api/users/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,10 +57,10 @@
             const data = await response.json();
 
             auth.setToken(data.token);
-            auth.setUser(data.email, username, data.user_id);
+            auth.setUser(data.email, username, data.id);
 
             goto('/dashboard');
-        } catch (error) {
+        } catch (err: any) {
             errorMsg = 'An error occurred during sign up';
         } finally {
             loading = false;
@@ -74,7 +74,7 @@
             <div class="flex flex-col items-center gap-y-6">
                 <h3>Sign Up</h3>
                 {#if errorMsg}
-                    <div class="text-red-500 mb-4">{errorMsg}</div>
+                    <div class="text-red-500 -my-3">{errorMsg}</div>
                 {/if}
                 
                 <form class="flex flex-col gap-y-3 w-full" onsubmit={handleSubmit}>

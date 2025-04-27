@@ -2,7 +2,25 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    is_private = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.user.username}'s profile"
+    
 class Friend(models.Model):
     user_id1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friends_as_user1')
     user_id2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='friends_as_user2')
@@ -97,6 +115,7 @@ class FitnessChallenge(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     participants = models.ManyToManyField(User, related_name='challenges_participated')
+    completed_by = models.ManyToManyField(User, related_name='challenges_completed', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     workouts = models.ManyToManyField(Workout, related_name='challenges', blank=True)

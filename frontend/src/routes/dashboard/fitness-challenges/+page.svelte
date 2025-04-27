@@ -5,11 +5,17 @@
 
     let { data } = $props();
     
-    let myChallenges = $derived(data.myChallenges.results);
-    let participatingChallenges = $derived(data.participatingChallenges.results);
+    let myChallenges = $state(data.myChallenges.results);
+    let participatingChallenges = $state(data.participatingChallenges.results);
+    let userWorkouts = $state(data.userWorkouts.results);
+
+    let completedWorkouts = $derived(userWorkouts.map((workout: any) => {
+        return workout.workout_details;
+    }))
 
     function handleCreateFitnessChallenge() {
         modal.setModal(ModalType.CREATE_CHALLENGE);
+        modal.setPayload(completedWorkouts);
     }
 </script>
 
@@ -23,23 +29,23 @@
     <div class="flex flex-col gap-y-3">
         <h4>My Challenges</h4>
         {#if myChallenges && myChallenges.length > 0}
-            {#each myChallenges as challenge}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <FitnessChallengeCard fitnessChallenge={challenge} />
-                </div>
-            {/each}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {#each myChallenges as challenge}
+                    <FitnessChallengeCard editable={true} {completedWorkouts} fitnessChallenge={challenge} joinable={false} />
+                {/each}
+            </div>
         {:else}
             <p>You haven't created any fitness challenges yet</p>
         {/if}
     </div>
     <div class="flex flex-col gap-y-3">
         <h4>Participating Challenges</h4>
-        {#if myChallenges && myChallenges.length > 0}
-            {#each myChallenges as challenge}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <FitnessChallengeCard fitnessChallenge={challenge} />
-                </div>
-            {/each}
+        {#if participatingChallenges && participatingChallenges.length > 0}
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {#each participatingChallenges as challenge}
+                    <FitnessChallengeCard fitnessChallenge={challenge} joinable={false} />
+                {/each}
+            </div>
         {:else}
             <p>You aren't apart of any challenges. Browse fun challenges <a href="/fitness-challenges" class="link">here</a></p>
         {/if}

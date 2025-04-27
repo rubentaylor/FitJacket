@@ -48,13 +48,11 @@
 
             const data = await response.json();
 
-            console.log(data);
-
             auth.setToken(data.token);
             auth.setUser(data.email, username, data.user_id);
 
             goto('/dashboard');
-        } catch (error) {
+        } catch (err: any) {
             errorMsg = 'An error occurred during sign up';
         } finally {
             loading = false;

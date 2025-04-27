@@ -85,8 +85,21 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
 		message.senderData = user;
 	});
 
+	const friendsResponse = await fetch(`${BACKEND_URL}/api/friends/${userId}/`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (!friendsResponse.ok) {
+		error(502, 'Friends data not found');
+	}
+
+	const friends = await friendsResponse.json();
+
 	return {
 		receivedMessages,
-		sentMessages
+		sentMessages,
+		friends
 	};
 };

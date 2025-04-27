@@ -13,8 +13,6 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
 
 	const allEvents = await response.json();
 
-	console.log(allEvents.results);
-
 	const myEvents = allEvents.results.filter((event: any) => event.user.toString() === userId);
 
 	const participatingEvents = allEvents.results.filter(

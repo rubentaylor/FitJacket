@@ -2,40 +2,46 @@
     import { modal } from '$lib/shared/modals.svelte';
     import { auth } from '$lib/shared/auth.svelte';
 
-    let { completedWorkouts } = $props();
+    let { challenge, completedWorkouts } = $props();
 
-    console.log(completedWorkouts);
+    console.log(challenge);
 
-    let title = $state('');
-    let description = $state('');
-    let startTime = $state();
-    let endTime = $state();
-    let workouts = $state([]);
+    function formatDateForInput(dateString: string) {
+        const date = new Date(dateString);
+        return date.toISOString().slice(0, 16);
+    }
+
+    let title = $state(challenge.title);
+    let description = $state(challenge.description);
+    let startTime = $state(formatDateForInput(challenge.start_time));
+    let endTime = $state(formatDateForInput(challenge.end_time));
+    let workouts = $state(challenge.workouts || []);
     let loading = $state(false);
 
-    async function handleCreateFitnessChallenge() {
+    async function handleUpdateFitnessChallenge() {
         loading = true;
 
         try {
-            const response = await fetch('/dashboard/fitness-challenges', {
-                method: 'POST',
+            const response = await fetch(`/dashboard/fitness-challenges/`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    id: challenge.id,
                     title: title,
                     description: description,
                     start_time: startTime,
                     end_time: endTime,
                     user: auth.user.id,
-                    participants: [auth.user.id],
-                    completed_by: [auth.user.id],
+                    participants: challenge.participants,
+                    completed_by: challenge.completed_by,
                     workouts: workouts
                 })
             });
             
             if (!response.ok) {
-                throw new Error('Failed to create fitness challenge');
+                throw new Error('Failed to update fitness challenge');
             }
 
             window.location.href = '/dashboard/fitness-challenges/';
@@ -51,7 +57,7 @@
 <div class="bg-white rounded shadow w-[800px] p-4">
     <div class="flex flex-col gap-y-3">
         <div class="flex justify-between items-center">
-            <h3>Fitness Challenge</h3>
+            <h3>Edit Fitness Challenge</h3>
             <!-- svelte-ignore a11y_consider_explicit_label -->
             <button 
                 class="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
@@ -63,7 +69,7 @@
             </button>
         </div>
         <hr/>
-        <form class="flex flex-col gap-y-3" onsubmit={handleCreateFitnessChallenge}>
+        <form class="flex flex-col gap-y-3" onsubmit={handleUpdateFitnessChallenge}>
             <div class="flex flex-col gap-y-1">
                 <label for="title" class="text-sm">Title</label>
                 <input class="input h-9"
@@ -145,7 +151,7 @@
                     class="btn-primary h-8"
                     disabled={loading || !title || !description || !startTime || !endTime || workouts.length == 0 || startTime >= endTime} 
                 >
-                    Create Challenge
+                    Update Challenge
                 </button>
             </div>
         </form>

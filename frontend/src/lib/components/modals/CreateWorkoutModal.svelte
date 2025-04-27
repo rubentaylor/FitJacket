@@ -2,43 +2,38 @@
     import { modal } from '$lib/shared/modals.svelte';
     import { auth } from '$lib/shared/auth.svelte';
 
-    let { completedWorkouts } = $props();
-
-    console.log(completedWorkouts);
-
-    let title = $state('');
+    let name = $state('');
     let description = $state('');
-    let startTime = $state();
-    let endTime = $state();
-    let workouts = $state([]);
+    let type = $state('');
+    let startTime = $state('');
+    let endTime = $state('');
     let loading = $state(false);
 
-    async function handleCreateFitnessChallenge() {
+    async function handleCreateWorkout(e: Event) {
+        e.preventDefault();
         loading = true;
 
         try {
-            const response = await fetch('/dashboard/fitness-challenges', {
+            const response = await fetch('/dashboard/workouts/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    title: title,
+                    name: name,
                     description: description,
+                    type: type,
                     start_time: startTime,
                     end_time: endTime,
-                    user: auth.user.id,
-                    participants: [auth.user.id],
-                    completed_by: [auth.user.id],
-                    workouts: workouts
+                    user: auth.user.id
                 })
             });
             
             if (!response.ok) {
-                throw new Error('Failed to create fitness challenge');
+                throw new Error('Failed to create workout');
             }
 
-            window.location.href = '/dashboard/fitness-challenges/';
+            window.location.href = '/dashboard/';
             modal.close();
         } catch (err) {
             console.error(err);
@@ -51,7 +46,7 @@
 <div class="bg-white rounded shadow w-[800px] p-4">
     <div class="flex flex-col gap-y-3">
         <div class="flex justify-between items-center">
-            <h3>Fitness Challenge</h3>
+            <h3>Create Workout</h3>
             <!-- svelte-ignore a11y_consider_explicit_label -->
             <button 
                 class="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
@@ -63,17 +58,36 @@
             </button>
         </div>
         <hr/>
-        <form class="flex flex-col gap-y-3" onsubmit={handleCreateFitnessChallenge}>
+        <form class="flex flex-col gap-y-3" onsubmit={handleCreateWorkout}>
             <div class="flex flex-col gap-y-1">
-                <label for="title" class="text-sm">Title</label>
+                <label for="name" class="text-sm">Name</label>
                 <input class="input h-9"
                     type="text" 
-                    id="title" 
-                    bind:value={title} 
+                    id="name" 
+                    bind:value={name} 
                     required 
                     disabled={loading}
-                    placeholder="Challenge title"
+                    placeholder="Workout name"
                 />
+            </div>
+
+            <div class="flex flex-col gap-y-1">
+                <label for="type" class="text-sm">Type</label>
+                <select class="input h-9"
+                    id="type" 
+                    bind:value={type}
+                    required
+                    disabled={loading}
+                >
+                    <option value="" disabled selected>Select workout type</option>
+                    <option value="cardio">Cardio</option>
+                    <option value="muscle">Muscle</option>
+                    <option value="flexibility">Flexibility</option>
+                    <option value="strength">Strength</option>
+                    <option value="functional">Functional</option>
+                    <option value="circuit">Circuit</option>
+                    <option value="other">Other</option>
+                </select>
             </div>
 
             <div class="flex flex-col gap-y-1">
@@ -83,7 +97,7 @@
                     bind:value={description} 
                     required 
                     disabled={loading}
-                    placeholder="Describe your challenge"
+                    placeholder="Describe your workout"
                 ></textarea>
             </div>
             
@@ -110,26 +124,6 @@
                     />
                 </div>
             </div>
-
-            <div class="flex flex-col gap-y-1">
-                <label for="workouts" class="text-sm">Workouts</label>
-                <select class="input h-34"
-                    id="workouts" 
-                    bind:value={workouts} 
-                    multiple
-                    disabled={loading}
-                >
-                    <option value="" disabled>Select workouts</option>
-                    {#if completedWorkouts && completedWorkouts.length > 0}
-                        {#each completedWorkouts as workout}
-                            <option value={workout.id}>{workout.name}</option>
-                        {/each}
-                    {:else}
-                        <option value="" disabled>No completed workouts available</option>
-                    {/if}
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple workouts</p>
-            </div>
             
             <div class="flex justify-end gap-x-3 mt-2">
                 <button 
@@ -143,9 +137,9 @@
                 <button 
                     type="submit"
                     class="btn-primary h-8"
-                    disabled={loading || !title || !description || !startTime || !endTime || workouts.length == 0 || startTime >= endTime} 
+                    disabled={loading || !name || !type || !description || !startTime || !endTime || startTime >= endTime}
                 >
-                    Create Challenge
+                    Create Workout
                 </button>
             </div>
         </form>

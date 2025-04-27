@@ -2,15 +2,17 @@
     import { auth } from "$lib/shared/auth.svelte";
     import { onMount } from 'svelte';
     import * as echarts from 'echarts';
-	import { modal, ModalType } from "$lib/shared/modals.svelte.js";
-
+    
     let { data } = $props();
 
+    let userDetails = $derived(data.userDetails);
     let incompleteWorkouts = $derived(data.availableWorkouts);
     let completedWorkouts = $derived(data.userWorkouts.results);
+    let isFriend = $derived(data.isFriend);
+    let hasPendingRequest = $derived(data.hasPendingRequest);
+    let isSelf = $derived(data.isSelf);
 
-    let tip = $state('');
-    let loadingTip = $state(false);
+    console.log(hasPendingRequest);
     
     // Chart DOM elements
     let lineChartEl: HTMLElement;
@@ -22,59 +24,34 @@
     let pieChart: echarts.ECharts;
     let calendarChart: echarts.ECharts;
 
-    function handleCreateWorkout() {
-        modal.setModal(ModalType.CREATE_WORKOUT);
-    }
-
-    async function handleCompleteWorkout(workoutId: number) {
+    async function handleUnfriend() {
         try {
-            const response = await fetch('/dashboard', {
-                method: 'PUT',
+            await fetch('/dashboard/friends', {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    workoutId: workoutId
+                    friendId: userDetails.id
                 })
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to mark workout as complete');
-            }
-            
-            window.location.href = '/dashboard';
+            })
         } catch (err) {
             console.error(err);
+        } finally {
+            window.location.reload();
         }
     }
 
-    async function handleGenerateTip() {
-        loadingTip = true;
-
-        tip = "";
-        
+    async function handleSendRequest() {
         try {
-            const response = await fetch('/dashboard', {
+            await fetch(`/profile/${userDetails.id}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    workouts: completedWorkouts
-                })
             });
-            
-            if (!response.ok) {
-                throw new Error('Failed to generate tip');
-            }
-            
-            const result = await response.json();
-            tip = result.tip;
+
         } catch (err) {
-            console.error('Error generating tip:', err);
-            tip = "Sorry, couldn't generate a tip right now. Please try again later.";
+            console.error(err);
         } finally {
-            loadingTip = false;
+            window.location.reload();
         }
     }
     
@@ -215,88 +192,96 @@
     });
 </script>
 
-<div class="flex flex-col gap-y-6 h-full">
-    <h2>Hello, {auth.user.username} 👋</h2>
-
-    <div class="flex justify-between w-full gap-6 h-full">
-        <div class="w-2/3 h-full gap-6 flex flex-col ">
-            <div class="flex flex-col gap-6">
-                <!-- CHARTS -->
-                <div class="flex gap-6 items-center justify-center">
-                    <div class="bg-white p-4 rounded shadow h-80 w-[400px]">
-                        <div bind:this={pieChartEl} class="w-full h-full"></div>
-                    </div>
-                    <div class="bg-white p-4 rounded shadow h-80 w-full">
-                        <div bind:this={lineChartEl} class="w-full h-full"></div>
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded shadow h-60 w-full">
-                    <div bind:this={calendarChartEl} class="w-full h-full"></div>
-                </div>
+<section class="h-[calc(100vh+56px)]">
+    <div class="page-margins pt-[calc(56px+40px)] pb-10 flex flex-col gap-y-6 h-full">
+        <div class="flex justify-between items-center">
+            <div class="flex flex-col">
+                <h2>{userDetails.username}</h2>
+                <p>{userDetails.email}</p>
             </div>
-            <div class="relative h-full">
-                <div class="bg-neutral-100 rounded p-2 h-full w-full">
-                    <p>{loadingTip ? 'Generating tip...' : tip}</p>
-                </div>
-                <button class="btn-secondary h-8 bottom-2 right-2 absolute" onclick={handleGenerateTip}>
-                    Generate Tip
-                </button>
-            </div>
+            {#if isSelf}
+                <a href="/dashboard" class="btn-primary h-8">Dashboard</a>
+            {:else if isFriend}
+                <button class="btn-red h-8" onclick={handleUnfriend}>Unfriend</button>
+            {:else if hasPendingRequest}
+                <button class="btn-primary h-8" disabled={true}>Pending Request</button>
+            {:else}
+                <button class="btn-primary h-8" onclick={handleSendRequest}>Add Friend</button>
+            {/if}
         </div>
+        
+        
+        <div class="flex justify-between w-full gap-6">
+            <div class="w-2/3 gap-6 flex flex-col">
+                <div class="flex flex-col gap-6">
+                    <!-- CHARTS -->
+                    <div class="flex gap-6 items-center justify-center">
+                        <div class="bg-white p-4 rounded shadow h-80 w-[400px]">
+                            <div bind:this={pieChartEl} class="w-full h-full"></div>
+                        </div>
+                        <div class="bg-white p-4 rounded shadow h-80 w-full">
+                            <div bind:this={lineChartEl} class="w-full h-full"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded shadow h-60 w-full">
+                        <div bind:this={calendarChartEl} class="w-full h-full"></div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="h-full w-1/3 gap-6 flex flex-col">
-            <button class="btn-primary h-9 w-full" onclick={handleCreateWorkout}>
-                Create a Workout
-            </button>
-            <h4 class="-my-2">Incomplete Workouts</h4>
-            <div class="rounded shadow bg-white p-4 overflow-y-auto h-1/2">
-                <div class="flex flex-col gap-y-3">
-                    {#if incompleteWorkouts && incompleteWorkouts.length > 0}
-                        <div class="flex flex-col gap-y-3">
-                            {#each incompleteWorkouts as workout}
+            <div class="w-1/3 gap-6 flex flex-col">
+                <!-- <button class="btn-primary h-9 w-full" onclick={handleCreateWorkout}>
+                    Create a Workout
+                </button> -->
+                <h4 class="-my-2">Incomplete Workouts</h4>
+                <div class="rounded shadow bg-white p-4 overflow-y-auto h-1/2">
+                    <div class="flex flex-col gap-y-3">
+                        {#if incompleteWorkouts && incompleteWorkouts.length > 0}
+                            <div class="flex flex-col gap-y-3">
+                                {#each incompleteWorkouts as workout}
+                                    <div class="w-full">
+                                        <div class="flex justify-between items-center w-full">
+                                            <div class="flex items-center gap-x-2">
+                                                <h6>{workout.name}</h6>
+                                                <p class="bg-cyan-200 rounded-full px-2 text-cyan-600">{workout.type}</p>
+                                            </div>
+                                            <p>{new Date(workout.created_at).toLocaleString()}</p>
+                                        </div>
+                                        <p>{workout.description}</p>
+                                    </div>
+                                    <hr/>
+                                {/each}
+                            </div>
+                        {:else}
+                            <p>You haven't created any workouts yet</p>
+                        {/if}
+                    </div>
+                </div>
+                <h4 class="-my-2">Completed Workouts</h4>
+                <div class="rounded shadow bg-white p-4 overflow-y-auto h-1/2">
+                    <div class="flex flex-col gap-y-3">
+                        {#if completedWorkouts && completedWorkouts.length > 0}
+                            <div class="flex flex-col gap-y-3">
+                                {#each completedWorkouts as workout}
                                 <div class="w-full">
                                     <div class="flex justify-between items-center w-full">
                                         <div class="flex items-center gap-x-2">
-                                            <h6>{workout.name}</h6>
-                                            <p class="bg-cyan-200 rounded-full px-2 text-cyan-600">{workout.type}</p>
+                                            <h6>{workout.workout_details.name}</h6>
+                                            <p class="bg-cyan-200 rounded-full px-2 text-cyan-600">{workout.workout_details.type}</p>
                                         </div>
-                                        <p>{new Date(workout.created_at).toLocaleString()}</p>
+                                        <p>{new Date(workout.workout_details.created_at).toLocaleString()}</p>
                                     </div>
-                                    <p>{workout.description}</p>
-                                    <button class="btn-primary h-7 mt-2" onclick={() => handleCompleteWorkout(workout.id)}>Set Complete</button>
+                                    <p>{workout.workout_details.description}</p>
                                 </div>
                                 <hr/>
-                            {/each}
-                        </div>
-                    {:else}
-                        <p>You haven't created any workouts yet</p>
-                    {/if}
-                </div>
-            </div>
-            <h4 class="-my-2">Completed Workouts</h4>
-            <div class="rounded shadow bg-white p-4 overflow-y-auto h-1/2">
-                <div class="flex flex-col gap-y-3">
-                    {#if completedWorkouts && completedWorkouts.length > 0}
-                        <div class="flex flex-col gap-y-3">
-                            {#each completedWorkouts as workout}
-                            <div class="w-full">
-                                <div class="flex justify-between items-center w-full">
-                                    <div class="flex items-center gap-x-2">
-                                        <h6>{workout.workout_details.name}</h6>
-                                        <p class="bg-cyan-200 rounded-full px-2 text-cyan-600">{workout.workout_details.type}</p>
-                                    </div>
-                                    <p>{new Date(workout.workout_details.created_at).toLocaleString()}</p>
-                                </div>
-                                <p>{workout.workout_details.description}</p>
+                                {/each}
                             </div>
-                            <hr/>
-                            {/each}
-                        </div>
-                    {:else}
-                        <p>You haven't completed any workouts yet</p>
-                    {/if}
+                        {:else}
+                            <p>You haven't completed any workouts yet</p>
+                        {/if}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>

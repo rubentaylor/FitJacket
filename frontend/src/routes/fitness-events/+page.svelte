@@ -10,7 +10,7 @@
     <div class="page-margins pt-[calc(56px+40px)] pb-10 flex flex-col gap-y-6">
         <h2>Fitness Events</h2>
         
-        <div class="grid grid-cols-3">
+        <div class="grid grid-cols-3 gap-4">
             {#if fitnessEvents && fitnessEvents.length > 0}
                 {#each fitnessEvents as fitnessEvent}
                     <FitnessEventCard {fitnessEvent}/>

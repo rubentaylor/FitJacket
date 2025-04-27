@@ -64,8 +64,7 @@ export const PUT: RequestHandler = async ({ cookies, request }) => {
 		const response = await fetch(`${BACKEND_URL}/api/messages/${messageId}/mark-as-viewed/`, {
 			method: 'PUT',
 			headers: {
-				Authorization: `Bearer ${token}`,
-				'Content-Type': 'application/json'
+				Authorization: `Bearer ${token}`
 			}
 		});
 
