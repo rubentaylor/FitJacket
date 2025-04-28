@@ -60,9 +60,9 @@
                                     <p class="text-xs">{friend.user_id1 != auth.user.id ? friend.user_id1_details.email : friend.user_id2_details.email}</p>
                                 </div>
                                 <div class="flex gap-x-3">
-                                    <button class="btn-primary h-8">
+                                    <a href="/profile/{friend.user_id1 != auth.user.id ? friend.user_id1_details.id : friend.user_id2_details.id}" class="btn-primary h-8">
                                         View Profile
-                                    </button>
+                                    </a>
                                     <button onclick={() => handleUnfriend(friend.id)} class="btn-red h-8">
                                         Unfriend
                                     </button>

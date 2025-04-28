@@ -12,7 +12,9 @@
     let hasPendingRequest = $derived(data.hasPendingRequest);
     let isSelf = $derived(data.isSelf);
 
-    console.log(hasPendingRequest);
+    console.log(isFriend);
+
+    let isPrivate = $derived(userDetails?.profile?.is_private || false);
     
     // Chart DOM elements
     let lineChartEl: HTMLElement;
@@ -192,96 +194,115 @@
     });
 </script>
 
-<section class="h-[calc(100vh+56px)]">
+<section class="h-[calc(100vh+56px)] mb-20">
     <div class="page-margins pt-[calc(56px+40px)] pb-10 flex flex-col gap-y-6 h-full">
         <div class="flex justify-between items-center">
             <div class="flex flex-col">
                 <h2>{userDetails.username}</h2>
                 <p>{userDetails.email}</p>
             </div>
-            {#if isSelf}
-                <a href="/dashboard" class="btn-primary h-8">Dashboard</a>
-            {:else if isFriend}
-                <button class="btn-red h-8" onclick={handleUnfriend}>Unfriend</button>
-            {:else if hasPendingRequest}
-                <button class="btn-primary h-8" disabled={true}>Pending Request</button>
-            {:else}
-                <button class="btn-primary h-8" onclick={handleSendRequest}>Add Friend</button>
+            {#if !isPrivate || isSelf || isFriend}
+                {#if isSelf}
+                    <a href="/dashboard" class="btn-primary h-8">Dashboard</a>
+                {:else if isFriend}
+                    <button class="btn-red h-8" onclick={handleUnfriend}>Unfriend</button>
+                {:else if hasPendingRequest}
+                    <button class="btn-primary h-8" disabled={true}>Pending Request</button>
+                {:else}
+                    <button class="btn-primary h-8" onclick={handleSendRequest}>Add Friend</button>
+                {/if}
             {/if}
         </div>
         
-        
-        <div class="flex justify-between w-full gap-6">
-            <div class="w-2/3 gap-6 flex flex-col">
-                <div class="flex flex-col gap-6">
-                    <!-- CHARTS -->
-                    <div class="flex gap-6 items-center justify-center">
-                        <div class="bg-white p-4 rounded shadow h-80 w-[400px]">
-                            <div bind:this={pieChartEl} class="w-full h-full"></div>
+        {#if isPrivate && !isSelf && !isFriend}
+            <!-- Show private profile message -->
+            <div class="flex flex-col items-center justify-center">
+                <h3 class="text-xl font-medium mb-4">This profile is private</h3>
+                <p class="text-center max-w-md">
+                    {userDetails.username}'s profile is set to private. 
+                    You need to be friends to view their workout data and statistics.
+                </p>
+                {#if !hasPendingRequest}
+                    <button class="btn-primary h-9 mt-6" onclick={handleSendRequest}>
+                        Send Friend Request
+                    </button>
+                {:else}
+                    <p class="mt-6 text-neutral-500">Friend request pending</p>
+                {/if}
+            </div>
+        {:else}
+            <div class="flex justify-between w-full gap-6">
+                <div class="w-2/3 gap-6 flex flex-col">
+                    <div class="flex flex-col gap-6">
+                        <!-- CHARTS -->
+                        <div class="flex gap-6 items-center justify-center">
+                            <div class="bg-white p-4 rounded shadow h-80 w-[400px]">
+                                <div bind:this={pieChartEl} class="w-full h-full"></div>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow h-80 w-full">
+                                <div bind:this={lineChartEl} class="w-full h-full"></div>
+                            </div>
                         </div>
-                        <div class="bg-white p-4 rounded shadow h-80 w-full">
-                            <div bind:this={lineChartEl} class="w-full h-full"></div>
+                        <div class="bg-white p-4 rounded shadow h-60 w-full">
+                            <div bind:this={calendarChartEl} class="w-full h-full"></div>
                         </div>
-                    </div>
-                    <div class="bg-white p-4 rounded shadow h-60 w-full">
-                        <div bind:this={calendarChartEl} class="w-full h-full"></div>
                     </div>
                 </div>
-            </div>
 
-            <div class="w-1/3 gap-6 flex flex-col">
-                <!-- <button class="btn-primary h-9 w-full" onclick={handleCreateWorkout}>
-                    Create a Workout
-                </button> -->
-                <h4 class="-my-2">Incomplete Workouts</h4>
-                <div class="rounded shadow bg-white p-4 overflow-y-auto h-1/2">
-                    <div class="flex flex-col gap-y-3">
-                        {#if incompleteWorkouts && incompleteWorkouts.length > 0}
-                            <div class="flex flex-col gap-y-3">
-                                {#each incompleteWorkouts as workout}
+                <div class="w-1/3 gap-6 flex flex-col">
+                    <!-- <button class="btn-primary h-9 w-full" onclick={handleCreateWorkout}>
+                        Create a Workout
+                    </button> -->
+                    <h4 class="-my-2">Incomplete Workouts</h4>
+                    <div class="rounded shadow bg-white p-4 overflow-y-auto h-1/2">
+                        <div class="flex flex-col gap-y-3">
+                            {#if incompleteWorkouts && incompleteWorkouts.length > 0}
+                                <div class="flex flex-col gap-y-3">
+                                    {#each incompleteWorkouts as workout}
+                                        <div class="w-full">
+                                            <div class="flex justify-between items-center w-full">
+                                                <div class="flex items-center gap-x-2">
+                                                    <h6>{workout.name}</h6>
+                                                    <p class="bg-cyan-200 rounded-full px-2 text-cyan-600">{workout.type}</p>
+                                                </div>
+                                                <p>{new Date(workout.created_at).toLocaleString()}</p>
+                                            </div>
+                                            <p>{workout.description}</p>
+                                        </div>
+                                        <hr/>
+                                    {/each}
+                                </div>
+                            {:else}
+                                <p>You haven't created any workouts yet</p>
+                            {/if}
+                        </div>
+                    </div>
+                    <h4 class="-my-2">Completed Workouts</h4>
+                    <div class="rounded shadow bg-white p-4 overflow-y-auto h-1/2">
+                        <div class="flex flex-col gap-y-3">
+                            {#if completedWorkouts && completedWorkouts.length > 0}
+                                <div class="flex flex-col gap-y-3">
+                                    {#each completedWorkouts as workout}
                                     <div class="w-full">
                                         <div class="flex justify-between items-center w-full">
                                             <div class="flex items-center gap-x-2">
-                                                <h6>{workout.name}</h6>
-                                                <p class="bg-cyan-200 rounded-full px-2 text-cyan-600">{workout.type}</p>
+                                                <h6>{workout.workout_details.name}</h6>
+                                                <p class="bg-cyan-200 rounded-full px-2 text-cyan-600">{workout.workout_details.type}</p>
                                             </div>
-                                            <p>{new Date(workout.created_at).toLocaleString()}</p>
+                                            <p>{new Date(workout.workout_details.created_at).toLocaleString()}</p>
                                         </div>
-                                        <p>{workout.description}</p>
+                                        <p>{workout.workout_details.description}</p>
                                     </div>
                                     <hr/>
-                                {/each}
-                            </div>
-                        {:else}
-                            <p>You haven't created any workouts yet</p>
-                        {/if}
-                    </div>
-                </div>
-                <h4 class="-my-2">Completed Workouts</h4>
-                <div class="rounded shadow bg-white p-4 overflow-y-auto h-1/2">
-                    <div class="flex flex-col gap-y-3">
-                        {#if completedWorkouts && completedWorkouts.length > 0}
-                            <div class="flex flex-col gap-y-3">
-                                {#each completedWorkouts as workout}
-                                <div class="w-full">
-                                    <div class="flex justify-between items-center w-full">
-                                        <div class="flex items-center gap-x-2">
-                                            <h6>{workout.workout_details.name}</h6>
-                                            <p class="bg-cyan-200 rounded-full px-2 text-cyan-600">{workout.workout_details.type}</p>
-                                        </div>
-                                        <p>{new Date(workout.workout_details.created_at).toLocaleString()}</p>
-                                    </div>
-                                    <p>{workout.workout_details.description}</p>
+                                    {/each}
                                 </div>
-                                <hr/>
-                                {/each}
-                            </div>
-                        {:else}
-                            <p>You haven't completed any workouts yet</p>
-                        {/if}
+                            {:else}
+                                <p>You haven't completed any workouts yet</p>
+                            {/if}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {/if}
     </div>
 </section>

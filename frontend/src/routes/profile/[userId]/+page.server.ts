@@ -59,7 +59,12 @@ export const load: PageServerLoad = async ({ cookies, params, fetch }) => {
 	}
 
 	const friends = await friendsResponse.json();
-	const isFriend = friends.results.some((friend: any) => friend.id === parseInt(profileUserId));
+	const isFriend = friends.results.some(
+		(friend: any) =>
+			(friend.user_id1 === parseInt(profileUserId) &&
+				friend.user_id2 === parseInt(currentUserId)) ||
+			(friend.user_id1 === parseInt(currentUserId) && friend.user_id2 === parseInt(profileUserId))
+	);
 
 	const friendRequestsReceivedResponse = await fetch(
 		`${BACKEND_URL}/api/friend-requests/${currentUserId}/`,
@@ -91,15 +96,11 @@ export const load: PageServerLoad = async ({ cookies, params, fetch }) => {
 
 	const friendRequestsSent = await friendRequestsSentResponse.json();
 
-	console.log(friendRequestsSent.results);
-
 	const hasPendingRequest =
 		friendRequestsReceived.results.some(
 			(request: any) => request.receiver === parseInt(profileUserId)
 		) ||
 		friendRequestsSent.results.some((request: any) => request.sender === parseInt(currentUserId));
-
-	console.log('hasPendingRequest', hasPendingRequest);
 
 	const userWorkoutIds = new Set(
 		userWorkouts.results.map((userWorkout: any) => userWorkout.workout)

@@ -1,5 +1,7 @@
 <script lang="ts">
     import { FitnessChallengeCard } from "$lib/components/ui/";
+    import { auth } from "$lib/shared/auth.svelte";
+
     let { data } = $props();
 
     let fitnessChallenges = $derived(data.fitnessChallenges.results);
@@ -12,7 +14,7 @@
         <div class="grid grid-cols-3 gap-4">
             {#if fitnessChallenges && fitnessChallenges.length > 0}
                 {#each fitnessChallenges as fitnessChallenge}
-                    <FitnessChallengeCard {fitnessChallenge}/>
+                    <FitnessChallengeCard joinable={auth.token && auth.token !== ''} {fitnessChallenge}/>
                 {/each}
             {:else}
                 <p>There are no active events</p>

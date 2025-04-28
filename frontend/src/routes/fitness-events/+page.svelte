@@ -13,7 +13,7 @@
         <div class="grid grid-cols-3 gap-4">
             {#if fitnessEvents && fitnessEvents.length > 0}
                 {#each fitnessEvents as fitnessEvent}
-                    <FitnessEventCard {fitnessEvent}/>
+                    <FitnessEventCard joinable={auth.token && auth.token !== ''} {fitnessEvent}/>
                 {/each}
             {:else}
                 <p>There are no active events</p>

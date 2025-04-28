@@ -3,6 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from .models import Friend, Announcement, FriendRequest, Message, FitnessEvent, FitnessChallenge, FlaggedAIMessage, Workout, UserWorkout
@@ -385,20 +386,52 @@ def strava_callback(request):
 
     token_data = token_response.json()
     access_token = token_data.get('access_token')
+    
+    request.session['strava_token'] = access_token
 
-    # Make test API call
+    data_to_send = {
+        'activities': [],
+        'athlete': {}
+    }
+    
     if access_token:
         headers = {'Authorization': f'Bearer {access_token}'}
-        activities_response = requests.get('https://www.strava.com/api/v3/athlete/activities', headers=headers)
+        athlete_response = requests.get('https://www.strava.com/api/v3/athlete', headers=headers)
+        
+        if athlete_response.status_code == 200:
+            data_to_send['athlete'] = athlete_response.json()
+        
+        activities_response = requests.get('https://www.strava.com/api/v3/athlete/activities?per_page=10', headers=headers)
 
         if activities_response.status_code == 200:
-            activities = activities_response.json()
-            print("Strava Activities:")
-            for activity in activities[:5]:  # Limit to first 5
-                print(f"Name: {activity['name']} | Distance: {activity['distance']}m")
-        else:
-            print("Failed to fetch activities:", activities_response.text)
-    else:
-        print("No access token returned:", token_data)
+            data_to_send['activities'] = activities_response.json()
+    
+    import urllib.parse
+    import json
+    encoded_data = urllib.parse.quote(json.dumps(data_to_send))
+    
+    frontend_url = "http://localhost:5173/dashboard/settings"
+    redirect_url = f"{frontend_url}?data={encoded_data}&connected=true"
+    
+    return redirect(redirect_url)
 
-    return JsonResponse(token_data)
+@api_view(['GET'])
+def strava_latest_activity(request):
+    access_token = request.session.get('strava_token')
+    
+    if not access_token:
+        return JsonResponse({'error': 'Not connected to Strava'}, status=400)
+    
+    headers = {'Authorization': f'Bearer {access_token}'}
+    response = requests.get(
+        'https://www.strava.com/api/v3/athlete/activities?per_page=1',
+        headers=headers
+    )
+    
+    if response.status_code == 200:
+        activities = response.json()
+        if activities:
+            return JsonResponse(activities[0])
+        return JsonResponse({'message': 'No activities found'})
+    else:
+        return JsonResponse({'error': 'Failed to fetch activity'}, status=400)

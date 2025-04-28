@@ -10,7 +10,7 @@ from .views import (
     FitnessEventListView, FitnessEventUserListView, FitnessEventCreateView, FitnessEventDetailView,
     FitnessChallengeListView, FitnessChallengeUserListView, FitnessChallengeCreateView,
     FlaggedAIMessageListView,
-    WorkoutListView, CustomAuthToken, MessageMarkAsViewedView, BatchUserLookupView, BatchWorkoutLookupView, FriendRequestAcceptView, FriendRequestDeclineView, FriendDeleteView, FitnessEventUpdateView, FitnessEventDeleteView, FitnessChallengeUpdateView, FitnessChallengeDeleteView, FitnessChallengeDetailView, UserWorkoutCreateView, UserWorkoutListView, UserUpdateView, ChangePasswordView
+    WorkoutListView, CustomAuthToken, MessageMarkAsViewedView, BatchUserLookupView, BatchWorkoutLookupView, FriendRequestAcceptView, FriendRequestDeclineView, FriendDeleteView, FitnessEventUpdateView, FitnessEventDeleteView, FitnessChallengeUpdateView, FitnessChallengeDeleteView, FitnessChallengeDetailView, UserWorkoutCreateView, UserWorkoutListView, UserUpdateView, ChangePasswordView, 
 )
 
 urlpatterns = [
@@ -47,9 +47,10 @@ urlpatterns = [
     path('messages/<int:pk>/mark-as-viewed/', MessageMarkAsViewedView.as_view(), name='message-mark-as-viewed'),
     path('messages/create/', MessageCreateView.as_view(), name='message-create'),
     path('users/batch/', BatchUserLookupView.as_view(), name='batch-user-lookup'),
-    path('strava/login/', views.strava_login, name='strava_login'),
-    path('strava/callback/', views.strava_callback, name='strava_callback'),
     path('user-workouts/create', UserWorkoutCreateView.as_view(), name='user-workout-create'),
     path('user-workouts/<int:user_id>/', UserWorkoutListView.as_view(), name='user-workout-list'),
     path('workouts/create/', views.WorkoutCreateView.as_view(), name='workout-create'),
+    path('strava/login/', views.strava_login, name='strava_login'),
+    path('strava/callback/', views.strava_callback, name='strava_callback'),
+    path('strava/latest-activity/', views.strava_latest_activity, name='strava-latest-activity'),
 ]
